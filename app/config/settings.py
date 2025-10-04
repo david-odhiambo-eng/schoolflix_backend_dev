@@ -11,6 +11,7 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=str(BASE_DIR / ".env"))
     VERSION: str
     DATABASE_URI: str
+    TEST_DATABASE_URI: str
     REDIS_URI: RedisDsn = "redis://localhost:6379/0"
 
     JWT_SECRET: str
@@ -24,6 +25,10 @@ class Config(BaseSettings):
     @property
     def DATABASE_URL(self)->str:
         return MultiHostUrl(url=self.DATABASE_URI).unicode_string()
+    @computed_field
+    @property
+    def ANALYTIC_DB_URL(self)->str:
+        return MultiHostUrl(url=self.TEST_DATABASE_URI).unicode_string()
 
     @computed_field()
     @property
@@ -44,11 +49,15 @@ class Config(BaseSettings):
 settings = Config()
 
 TORTOISE_ORM = {
-    "connections": {"default": settings.DATABASE_URL},
+    "connections": {"default": settings.DATABASE_URL, "test": settings.ANALYTIC_DB_URL},
     "apps": {
         "models": {
             "models": ["app.models.index", "aerich.models"],
             "default_connection": "default",
         },
+        'stores':{
+            "models": ["app.models.stores"],
+            "default_connection": "default",
+        }
     },
 }

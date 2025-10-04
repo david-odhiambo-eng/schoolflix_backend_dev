@@ -1,5 +1,6 @@
 from app.config.redis_client import get_redis
 from app.models.index import Campus, User
+from app.models.stores import Shop
 from app.schema.users import CreateUserModel, LoginPayload, RefreshPayload
 from fastapi.exceptions import HTTPException
 from tortoise.exceptions import IntegrityError
@@ -15,12 +16,15 @@ async def get_users():
 
 async def create_user(payload: CreateUserModel):
     campus = await Campus.get_or_none(name=payload.campus_name)
+    
     try:
         account = await User.create(
             email=payload.email,
             name=payload.name,
             password=hash_password(payload.password),
             campus=campus
+   
+
         )
     except IntegrityError:
         raise HTTPException(detail=f"Email {payload.email} already taken", status_code=400)

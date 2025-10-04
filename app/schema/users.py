@@ -5,6 +5,7 @@ class CreateUserModel(BaseModel):
     email: EmailStr
     password: str
     campus_name: str|None = None
+    
 
 class LoginPayload(BaseModel):
     email: EmailStr

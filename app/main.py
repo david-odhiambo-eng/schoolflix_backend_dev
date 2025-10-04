@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI
 
 from app.core.dependencies.auth import require_roles
 from app.middleware.auth import AuthMiddleware
+from app.models.stores import Shop
 from .config.settings import TORTOISE_ORM, settings
 from tortoise.contrib.fastapi import register_tortoise
 from app.routes.v1 import users_router, campus_router
@@ -19,9 +20,13 @@ register_tortoise(
 )
 app.add_middleware(AuthMiddleware)
 app.include_router(users_router, prefix=f"/{settings.VERSION}/users", tags=["Accounts"])
+
 app.include_router(campus_router, prefix=f"/{settings.VERSION}/campuses", tags=["Campus"])
 
 
 @app.get("/admin-only")
 async def admin_route(current_user = Depends(require_roles("admin"))):
     return {"message": "welcome admin", "user": current_user.email}
+@app.post('/shop')
+async def create_shop(name: str):
+    return await Shop.create(name=name)
